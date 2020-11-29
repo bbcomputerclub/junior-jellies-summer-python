@@ -18,14 +18,6 @@ def print_board(board):
         print(column + 1, end=" ")
     print()
 
-def check_winner(board, player_one_turn):
-    piece = ""
-    if player_one_turn:
-        piece = "X"
-    else:
-        piece = "O"
-    return check_rows(board, piece) or check_columns(board, piece) or check_diagonals(board, piece)
-
 def check_rows(board, piece):
     consecutive_piece_count = 0
     for row in board:
@@ -106,23 +98,32 @@ def check_board_filled(board):
 
 def play_game():
 
-    player_one_turn = True
+    player_turn = 1
     
     board = generate_board()
     
+    num_players = int(input("How many players are going to play Connect 4: "))
+    player_names = []
+    for i in range(num_players):
+        player_names.append(input("Type player " + str(i + 1) + "'s name: "))
+
     print()
 
+    
+
     while True:
-        if player_one_turn:
-            print("Player 1's turn")
-        else:
-            print("Player 2's turn")
+        print(player_names[player_turn - 1] + "'s turn")
         print()
         print_board(board)
         print()
-        column = int(input("Which column do you want to place your piece? ")) - 1
-
-        column_already_filled = board[0][column] != "_"
+        try:
+            column = int(input("Which column do you want to place your piece? ")) - 1
+            column_already_filled = board[0][column] != "_"
+        except (ValueError, IndexError):
+            print()
+            print("Invalid input, please try again")
+            print()
+            continue
         if column_already_filled:
             print()
             print("The column is already filled. Please try another column")
@@ -130,26 +131,19 @@ def play_game():
             continue
             
         if board[len(board) - 1][column] == "_":
-            if player_one_turn:
-                board[len(board) - 1][column] = "X"
-            else:
-                board[len(board) - 1][column] = "O"
+            board[len(board) - 1][column] = player_turn
         else:
             for row in range(len(board)):
                 if board[row][column] != "_":
-                    if player_one_turn:
-                        board[row - 1][column] = "X"
-                    else:
-                        board[row - 1][column] = "O"
+                    board[row - 1][column] = player_turn
                     break
-            
-        if check_winner(board, player_one_turn):
+
+        player_has_won = check_rows(board, player_turn) or check_columns(board, player_turn) or check_diagonals(board, player_turn)
+
+        if player_has_won:
             print_board(board)
             print()
-            if player_one_turn:
-                print("Player 1 won!")
-            else:
-                print("Player 2 won!")
+            print("Player", str(player_turn), "won!")
             break
         elif check_board_filled(board):
             print_board(board)
@@ -157,7 +151,7 @@ def play_game():
             print("Tie game!")
             break
 
-        player_one_turn = not player_one_turn
+        player_turn = player_turn % num_players + 1
         print()
 
 play_game()
